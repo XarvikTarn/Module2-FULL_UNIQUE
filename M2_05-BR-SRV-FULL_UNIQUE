@@ -33,10 +33,10 @@ ansible_user=root
 ansible_password=toor
 ansible_python_interpreter=/usr/bin/python3
 [targets]
-192.168.1.10    # HQ-SRV
-192.168.2.10    # HQ-CLI
-172.16.1.10     # HQ-RTR (LAN)
-192.168.3.1     # BR-RTR (LAN)
+192.168.1.10    
+192.168.2.10    
+172.16.1.10     
+192.168.3.1     
 EOF
 ansible all -m ping
 
@@ -45,23 +45,23 @@ echo "nameserver 77.88.8.8" > /etc/resolv.conf
 systemctl disable --now smb nmb krb5kdc slapd bind 2>/dev/null || true
 rm -f /etc/samba/smb.conf
 samba-tool domain provision
-#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "samba-tool domain provision" - по ГАЙДУ сделай настройку (AU-TEAM.IRPO, AU-TEAM, dc, SAMBA_INTERNAL, P@ssw0rd, P@ssw0rd)
+#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "samba-tool domain provision" - по ГАЙДУ сделай настройку ([ИМЯ_ДОМЕНА_CAPS], [ИМЯ_ДОМЕНА_КРАТКО_CAPS], dc, SAMBA_INTERNAL, P@ssw0rd, P@ssw0rd)
 \cp -f /var/lib/samba/private/krb5.conf /etc/krb5.conf
 systemctl enable --now samba
 echo "nameserver 127.0.0.1" > /etc/net/ifaces/enp7s1/resolv.conf
-echo "search au-team.irpo" >> /etc/net/ifaces/enp7s1/resolv.conf
+echo "search [ИМЯ_ДОМЕНА]" >> /etc/net/ifaces/enp7s1/resolv.conf
 systemctl restart network
-host -t A au-team.irpo
-kinit administrator@AU-TEAM.IRPO
-#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "kinit administrator@AU-TEAM.IRPO" - ВВЕДИ ПАРОЛЬ "P@ssw0rd" - И ТОЛЬКО ПОТОМ КОПИРУЙ-ВСТАВЛЯЙ ОСТАЛЬНОЕ! 
+host -t A [ИМЯ_ДОМЕНА]
+kinit administrator@[ИМЯ_ДОМЕНА_CAPS]
+#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "kinit administrator@[ИМЯ_ДОМЕНА_CAPS]" - ВВЕДИ ПАРОЛЬ "P@ssw0rd" - И ТОЛЬКО ПОТОМ КОПИРУЙ-ВСТАВЛЯЙ ОСТАЛЬНОЕ! 
 klist
-samba-tool group add hq
+samba-tool group add [ИМЯ_ГРУППЫ]
 for i in {1..5}; do
-  samba-tool user add hquser$i P@ssw0rd
-  samba-tool user setexpiry hquser$i --noexpiry
-  samba-tool group addmembers "hq" hquser$i
+  samba-tool user add [ПОЛЬЗОВАТЕЛЬ_ГРУППЫ]$i P@ssw0rd
+  samba-tool user setexpiry [ПОЛЬЗОВАТЕЛЬ_ГРУППЫ]$i --noexpiry
+  samba-tool group addmembers "[ИМЯ_ГРУППЫ]" [ПОЛЬЗОВАТЕЛЬ_ГРУППЫ]$i
 done
-samba-tool group listmembers hq
+samba-tool group listmembers [ИМЯ_ГРУППЫ]
 
 #Setting up Docker-Server
 mkdir -p /mnt/cdrom
@@ -71,40 +71,40 @@ systemctl enable --now docker
 docker load -i /mnt/cdrom/docker/site_latest.tar
 docker load -i /mnt/cdrom/docker/mariadb_latest.tar
 docker images
-mkdir -p /opt/testapp
-cd /opt/testapp
+mkdir -p /opt/[НАЗВАНИЕ_DOCKER-APP]
+cd /opt/[НАЗВАНИЕ_DOCKER-APP]
 cat <<EOF > docker-compose.yaml
 services:
-  db:
-    container_name: db
+  [ИМЯ_КОНТЕЙНЕРА_БД]:
+    container_name: [ИМЯ_КОНТЕЙНЕРА_БД]
     image: mariadb:latest
     environment:
-      MYSQL_DATABASE: testdb
-      MYSQL_USER: test
-      MYSQL_PASSWORD: P@ssw0rd
+      MYSQL_DATABASE: [ИМЯ_БД]
+      MYSQL_USER: [ИМЯ_ПОЛЬЗОВАТЕЛЯ_БД]
+      MYSQL_PASSWORD: [ПАРОЛЬ_ПОЛЬЗОВАТЕЛЯ_БД]
       MYSQL_ROOT_PASSWORD: toor
     volumes:
-      - db_data:/var/lib/mysql
+      - [ИМЯ_КОНТЕЙНЕРА_БД]_data:/var/lib/mysql
     restart: always
 
-  testapp:
-    container_name: testapp
+  [НАЗВАНИЕ_DOCKER-APP]:
+    container_name: [НАЗВАНИЕ_DOCKER-APP]
     image: site:latest
     ports:
-      - "8080:8000"
+      - "[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ]:8000"
     environment:
       DB_TYPE: "maria"
-      DB_HOST: "db"
+      DB_HOST: "[ИМЯ_КОНТЕЙНЕРА_БД]"
       DB_PORT: "3306"
-      DB_NAME: "testdb"
-      DB_USER: "test"
-      DB_PASS: "P@ssw0rd"
+      DB_NAME: "[ИМЯ_БД]"
+      DB_USER: "[ИМЯ_ПОЛЬЗОВАТЕЛЯ_БД]"
+      DB_PASS: "[ПАРОЛЬ_ПОЛЬЗОВАТЕЛЯ_БД]"
     depends_on:
-      - db
+      - [ИМЯ_КОНТЕЙНЕРА_БД]
     restart: always
 
 volumes:
-  db_data:
+  [ИМЯ_КОНТЕЙНЕРА_БД]_data:
 EOF
 systemctl disable --now ahttpd httpd2 nginx 2>/dev/null || true
 docker compose up -d
