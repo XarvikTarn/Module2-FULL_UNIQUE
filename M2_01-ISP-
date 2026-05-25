@@ -1,0 +1,69 @@
+#Preparing ISP for configuration
+sed -i 's|http://ftp.altlinux.org/pub/distributions/ALTLinux|http://10.45.33.250:3142/altlinux|g' /etc/apt/sources.list.d/alt.list
+cat <<EOF > /etc/nftables/nftables.nft
+#!/usr/sbin/nft -f
+flush ruleset
+table ip nat {
+    chain postrouting {
+        type nat hook postrouting priority srcnat;
+        oifname "enp7s1" masquerade
+    }
+}
+table ip filter {
+    chain forward {
+        type filter hook forward priority 0;
+        tcp flags syn tcp option maxseg size set 1400
+    }
+}
+EOF
+systemctl restart nftables
+apt-get update && apt-get install -y chrony
+
+#Setting up NTP-Server
+cat <<EOF >> /etc/chrony.conf
+local stratum 5
+allow all
+EOF
+systemctl enable --now chronyd
+systemctl restart chronyd & sleep 3
+ss -ulnp | grep 123
+chronyc tracking
+
+#Setting up Nginx-Client
+ssh -p 2026 root@172.16.1.10
+#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЬ ЛИШЬ "ssh -p 2026 root@172.16.1.10" - если спросит (yes/no) - пропиши "no". ПОТОМ копируй всё что ниже, это чисто для проверки.
+apt-get update && apt-get install -y nginx apache2 curl
+htpasswd -bc /etc/nginx/.htpasswd WEB P@ssw0rd
+cat <<EOF > /etc/nginx/sites-available.d/web.conf
+server {
+    listen 80;
+    server_name web.au-team.irpo;
+    location / {
+        proxy_pass http://172.16.1.10:8080;
+        proxy_set_header Host \$host;
+        auth_basic "Restricted Area";
+        auth_basic_user_file /etc/nginx/.htpasswd;
+    }
+}
+EOF
+cat <<EOF > /etc/nginx/sites-available.d/docker.conf
+server {
+    listen 80;
+    server_name docker.au-team.irpo;
+    location / {
+        proxy_pass http://172.16.2.10:8080;
+        proxy_set_header Host \$host;
+    }
+}
+EOF
+ln -s /etc/nginx/sites-available.d/web.conf /etc/nginx/sites-enabled.d/web.conf
+ln -s /etc/nginx/sites-available.d/docker.conf /etc/nginx/sites-enabled.d/docker.conf
+systemctl enable --now nginx
+nginx -t
+systemctl restart nginx
+ls -l /etc/nginx/sites-enabled.d/
+echo "127.0.0.1 web.au-team.irpo docker.au-team.irpo" >> /etc/hosts
+curl http://docker.au-team.irpo | head -n 10
+curl -I http://web.au-team.irpo
+curl -u WEB:P@ssw0rd http://web.au-team.irpo | head -n 10
+history -a
