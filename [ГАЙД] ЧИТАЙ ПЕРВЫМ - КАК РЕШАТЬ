@@ -1,19 +1,36 @@
 1) Прочитай задание целиком (я в качестве образца брал chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://bom.firpo.ru/file/public/117424/%D0%9A%D0%9E%D0%94%2009.02.06-3-2026%20%D0%A2%D0%BE%D0%BC%201.pdf);
 2) Прочитай "ЕСЛИ ПОЛНОСТЬЮ УНИКАЛЬНЫЙ ВАРИАНТ";
-3) Прочитай "КАК РАСЧИТАТЬ МАСКИ IP";
-4) Согласно порядку выполнения ниже сделай задание. Весь код копируй целиком в Блокнот (Notepad) в Windows и подставляй что надо куда надо.
+3) Согласно порядку выполнения ниже сделай задание. Весь код копируй целиком в Блокнот (Notepad) в Windows и подставляй что надо куда надо.
     Все моменты где нужно вставить что-то ([ТИПО_ТАКОГО]) смотри в "ЕСЛИ ПОЛНОСТЬЮ УНИКАЛЬНЫЙ ВАРИАНТ" - там указано где в задании их искать;
-5) Если поломалось - копируй код из (REVERSE) и сделай заново;
-6) КОММЕНТАРИИ (#типо таких) НЕ КОПИРУЙ!
-7) Все моменты, где нужно чё-то заменить ([ТИПО_ТАКОГО]) я постарался отделить от остального цельного блока кода. (Будет типо жирный блок - и отдельно 1-2 строки, потом снова жирный блок. По возможности)
+4) КОММЕНТАРИИ (#типо таких) НЕ КОПИРУЙ!
 
-# [МОДУЛЬ-1 - ПОРЯДОК ВЫПОЛНЕНИЯ]
-# ВАЖНО! ПЕРЕД ЭТИМ - зайди во вкладку "Hardware" в HQ-CLI и HQ-SRV. В HQ-CLI в строке "network device (net6)" кликни по ней дважды, и в "VLAN TAG" введи нужный VLAN (по заданию). То же самое для HQ-SRV со своим VLAN.
-# Типо если у тебя в задании для HQ-SRV стоит VLAN 100 - то в VLAN TAG пишешь "100". 
+# [МОДУЛЬ-2 - ПОРЯДОК ВЫПОЛНЕНИЯ]
+# 01 - M2_01 - ISP - Блок: "Preparing ISP for configuration"
+# 02 - M2_02 - HQ-RTR - Блок: "Preparing HQ-RTR for configuration"
+# 03 - M2_03 - BR-RTR - Блок: "Preparing BR-RTR for configuration"
+# 04 - M2_04 - HQ-SRV - Блок: "Preparing HQ-SRV for configuration"
+# 05 - M2_05 - BR-SRV - Блок: "Preparing BR-SRV for configuration"
+# 06 - M2_06 - HQ-CLI - Блок: "Preparing HQ-CLI for configuration"
+# 07 - M2_01 - ISP - Блок: "#Setting up NTP-Server"
+# 08 - M2_02 - HQ-RTR - Блок: "#Setting up NTP-Client"
+# 09 - M2_03 - BR-RTR - Блок: "#Setting up NTP-Client"
+# 10 - M2_04 - HQ-SRV - Блок: "#Setting up NTP-Client"
+# 11 - M2_05 - BR-SRV - Блок: "#Setting up NTP-Client"
+# 12 - M2_06 - HQ-CLI - Блок: "#Setting up NTP-Client"
+# 13 - M2_05 - BR-SRV - Блок: "#Setting up Ansible"
+# 14 - M2_05 - BR-SRV - Блок: "#Setting up Samba-DC Server"
+# 15 - M2_06 - HQ-CLI - Блок: "#Setting up Samba-DC Client"
+# 16 - M2_04 - HQ-SRV - Блок: "#Setting up RAID"
+# 17 - M2_04 - HQ-SRV - Блок: "#Setting up NFS-Server"
+# 18 - M2_06 - HQ-CLI - Блок: "#Setting up NFS-Client"
+# 19 - M2_04 - HQ-SRV - Блок: "#Setting up LAMP"
+# 20 - M2_05 - BR-SRV - Блок: "#Setting up Docker-Server"
+# 21 - M2_06 - HQ-CLI - Блок: "#Setting up Docker-Client"
 
-# 01 - M1_01 - ISP 
-# 02 - M1_02 - HQ-RTR
-# 03 - M1_03 - BR-RTR
-# 04 - M1_04 - BR-SRV
-# 05 - M1_05 - HQ-CLI
-# 06 - M1_06 - HQ-SRV
+#ВАЖНО: на этапе 21 "#Setting up Docker-Client" - открой в Proxmox на HQ-CLI вкладку "console" в верхнем-правом углу страницы, и выбери "noVNC" - введи пароль "resu" (логин - user, на всякий), открой Yandex Browser, и в новой вкладке введи:
+# "http://192.168.1.10" - там будет страница с "DemoTest". 
+Потом в другой вкладке введи "http://192.168.3.10:[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ]" - там будет сайт с текстом "важный и нужный сайт" - если так, то всё работает.
+
+# 22 - M2_02 - HQ-RTR - Блок: "#Setting up Nginx-Server"
+# 23 - M2_03 - BR-RTR - Блок: "#Setting up Nginx-Server"
+# 24 - M2_01 - ISP - Блок: "#Setting up Nginx-Client"
