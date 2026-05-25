@@ -33,7 +33,7 @@ chronyc tracking
 ssh -p [SSH_ПОРТ] root@172.16.1.10
 #ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЬ ЛИШЬ "ssh -p [SSH_ПОРТ] root@172.16.1.10" - если спросит (yes/no) - пропиши "no". ПОТОМ копируй всё что ниже, это чисто для проверки.
 apt-get update && apt-get install -y nginx apache2 curl
-htpasswd -bc /etc/nginx/.htpasswd WEB P@ssw0rd
+htpasswd -bc /etc/nginx/.htpasswd [LAMP_ПОЛЬЗОВАТЕЛЬ_CAPS] [LAMP_ПАРОЛЬ]
 cat <<EOF > /etc/nginx/sites-available.d/web.conf
 server {
     listen 80;
@@ -51,7 +51,7 @@ server {
     listen 80;
     server_name docker.[ИМЯ_ДОМЕНА];
     location / {
-        proxy_pass http://172.16.2.10:8080;
+        proxy_pass http://172.16.2.10:[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ];
         proxy_set_header Host \$host;
     }
 }
@@ -65,5 +65,5 @@ ls -l /etc/nginx/sites-enabled.d/
 echo "127.0.0.1 web.[ИМЯ_ДОМЕНА] docker.[ИМЯ_ДОМЕНА]" >> /etc/hosts
 curl http://docker.[ИМЯ_ДОМЕНА] | head -n 10
 curl -I http://web.[ИМЯ_ДОМЕНА]
-curl -u WEB:P@ssw0rd http://web.[ИМЯ_ДОМЕНА] | head -n 10
+curl -u [LAMP_ПОЛЬЗОВАТЕЛЬ_CAPS]:[LAMP_ПАРОЛЬ] http://web.[ИМЯ_ДОМЕНА] | head -n 10
 history -a
