@@ -21,29 +21,29 @@ nmcli c show --active
 nmcli con mod "DHCP-CLI" ipv4.dns "192.168.3.10"
 nmcli con mod "DHCP-CLI" ipv4.ignore-auto-dns yes
 nmcli con up "DHCP-CLI"
-system-auth write ad au-team.irpo hq-cli au-team administrator P@ssw0rd
+system-auth write ad [ИМЯ_ДОМЕНА] hq-cli [ИМЯ_ДОМЕНА_КРАТКО] administrator P@ssw0rd
 systemctl restart sssd
 sleep 3
 control libnss-role enabled
-roleadd hq wheel
-cat <<EOF > /etc/sudoers.d/hq_restrictions
-Cmnd_Alias HQ_CMDS = /bin/cat, /bin/grep, /usr/bin/id
-%wheel ALL=(ALL) NOPASSWD: HQ_CMDS
+roleadd [ИМЯ_ГРУППЫ_SAMBA] wheel
+cat <<EOF > /etc/sudoers.d/[ИМЯ_ГРУППЫ_SAMBA]_restrictions
+Cmnd_Alias [ИМЯ_ГРУППЫ_SAMBA_CAPS]_CMDS = /bin/cat, /bin/grep, /usr/bin/id
+%wheel ALL=(ALL) NOPASSWD: [ИМЯ_ГРУППЫ_SAMBA_CAPS]_CMDS
 EOF
 
 
-#ВВОДИ ЭТИ 4 КОМАНДЫ СТРОГО ПО 1 СТРОКЕ - ПОСЛЕ "su - hquser1" ВВЕДИ пароль P@ssw0rd для входа, а потом "sudo id" И "sudo reboot" (ошибка должна быть, всё норм) - ПОТОМ ВВЕДИ "exit" И ПОСЛЕ "exit" ДЕЛАЙ ОСТАЛЬНЫЕ КОМАНДЫ
-mkdir -p /home/AU-TEAM.IRPO/hquser1
-\cp -af /etc/skel/. /home/AU-TEAM.IRPO/hquser1/
-chown -R hquser1:hq /home/AU-TEAM.IRPO/hquser1
-su - hquser1
+#ВВОДИ ЭТИ 4 КОМАНДЫ СТРОГО ПО 1 СТРОКЕ - ПОСЛЕ "su - [ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]1" ВВЕДИ пароль [ПАРОЛЬ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA] для входа, а потом "sudo id" И "sudo reboot" (ошибка должна быть, всё норм) - ПОТОМ ВВЕДИ "exit" И ПОСЛЕ "exit" ДЕЛАЙ ОСТАЛЬНЫЕ КОМАНДЫ
+mkdir -p /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]
+\cp -af /etc/skel/. /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]/
+chown -R [ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]1:[ИМЯ_ДОМЕНА_CAPS] /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]
+su - [ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]1
 
 ##################################################################
-#ЕСЛИ РАБОТАТЬ НЕ БУДЕТ - ВВЕДИ "rm -rf /home/AU-TEAM.IRPO/hquser1" для удаления директории, и потом ВВЕДИ эти команды ниже:
+#ЕСЛИ РАБОТАТЬ НЕ БУДЕТ - ВВЕДИ "rm -rf /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]1" для удаления директории, и потом ВВЕДИ эти команды ниже:
 for i in {1..5}; do
-  mkdir -p /home/AU-TEAM.IRPO/hquser$i
-  cp -r /etc/skel/. /home/AU-TEAM.IRPO/hquser$i/
-  chown -R hquser$i@au-team.irpo:domain\ users@au-team.irpo /home/AU-TEAM.IRPO/hquser$i
+  mkdir -p /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]$i
+  cp -r /etc/skel/. /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]$i/
+  chown -R [ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]$i@[ИМЯ_ДОМЕНА]:domain\ users@[ИМЯ_ДОМЕНА] /home/[ИМЯ_ДОМЕНА_CAPS]/[ФОРМАТ_ПОЛЬЗОВАТЕЛЕЙ_ГРУППЫ_SAMBA]$i
 done
 ##################################################################
 
