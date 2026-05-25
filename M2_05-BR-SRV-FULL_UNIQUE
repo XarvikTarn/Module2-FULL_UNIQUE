@@ -1,0 +1,114 @@
+#Preparing BR-SRV for configuration
+sed -i 's|http://ftp.altlinux.org/pub/distributions/ALTLinux|http://10.45.33.250:3142/altlinux|g' /etc/apt/sources.list.d/alt.list
+echo "nameserver 77.88.8.8" > /etc/resolv.conf
+apt-get update && apt-get install -y chrony ansible sshpass task-samba-dc bind-utils
+systemctl disable --now bind 2>/dev/null || true
+sed -i 's/192.168.1.10/192.168.3.10/' /etc/net/ifaces/*/resolv.conf 2>/dev/null || true
+cat <<EOF > /etc/openssh/sshd_config
+Port 22
+PermitRootLogin yes
+Subsystem sftp /usr/lib/openssh/sftp-server
+EOF
+systemctl enable sshd
+systemctl restart network sshd
+ansible --version
+
+#Setting up NTP-Client
+sed -i '/pool/d' /etc/chrony.conf
+sed -i '/server/d' /etc/chrony.conf
+echo "server 172.16.2.1 iburst prefer" >> /etc/chrony.conf
+systemctl restart chronyd
+sleep 3 && chronyc sources
+
+#Setting up Ansible
+mkdir -p /etc/ansible
+cat <<EOF > /etc/ansible/ansible.cfg
+[defaults]
+inventory = /etc/ansible/hosts
+host_key_checking = False
+EOF
+cat <<EOF > /etc/ansible/hosts
+[all:vars]
+ansible_user=root
+ansible_password=toor
+ansible_python_interpreter=/usr/bin/python3
+[targets]
+192.168.1.10    # HQ-SRV
+192.168.2.10    # HQ-CLI
+172.16.1.10     # HQ-RTR (LAN)
+192.168.3.1     # BR-RTR (LAN)
+EOF
+ansible all -m ping
+
+#Setting up Samba-DC Server
+echo "nameserver 77.88.8.8" > /etc/resolv.conf
+systemctl disable --now smb nmb krb5kdc slapd bind 2>/dev/null || true
+rm -f /etc/samba/smb.conf
+samba-tool domain provision
+#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "samba-tool domain provision" - по ГАЙДУ сделай настройку (AU-TEAM.IRPO, AU-TEAM, dc, SAMBA_INTERNAL, P@ssw0rd, P@ssw0rd)
+\cp -f /var/lib/samba/private/krb5.conf /etc/krb5.conf
+systemctl enable --now samba
+echo "nameserver 127.0.0.1" > /etc/net/ifaces/enp7s1/resolv.conf
+echo "search au-team.irpo" >> /etc/net/ifaces/enp7s1/resolv.conf
+systemctl restart network
+host -t A au-team.irpo
+kinit administrator@AU-TEAM.IRPO
+#ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО ВАЖНО - КОПИРУЙ-ВСТАВЛЯЙ РОВНО ДО "kinit administrator@AU-TEAM.IRPO" - ВВЕДИ ПАРОЛЬ "P@ssw0rd" - И ТОЛЬКО ПОТОМ КОПИРУЙ-ВСТАВЛЯЙ ОСТАЛЬНОЕ! 
+klist
+samba-tool group add hq
+for i in {1..5}; do
+  samba-tool user add hquser$i P@ssw0rd
+  samba-tool user setexpiry hquser$i --noexpiry
+  samba-tool group addmembers "hq" hquser$i
+done
+samba-tool group listmembers hq
+
+#Setting up Docker-Server
+mkdir -p /mnt/cdrom
+mount /dev/sr0 /mnt/cdrom
+apt-get update && apt-get install -y docker-engine docker-compose-v2
+systemctl enable --now docker
+docker load -i /mnt/cdrom/docker/site_latest.tar
+docker load -i /mnt/cdrom/docker/mariadb_latest.tar
+docker images
+mkdir -p /opt/testapp
+cd /opt/testapp
+cat <<EOF > docker-compose.yaml
+services:
+  db:
+    container_name: db
+    image: mariadb:latest
+    environment:
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: test
+      MYSQL_PASSWORD: P@ssw0rd
+      MYSQL_ROOT_PASSWORD: toor
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+
+  testapp:
+    container_name: testapp
+    image: site:latest
+    ports:
+      - "8080:8000"
+    environment:
+      DB_TYPE: "maria"
+      DB_HOST: "db"
+      DB_PORT: "3306"
+      DB_NAME: "testdb"
+      DB_USER: "test"
+      DB_PASS: "P@ssw0rd"
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  db_data:
+EOF
+systemctl disable --now ahttpd httpd2 nginx 2>/dev/null || true
+docker compose up -d
+sleep 5
+docker compose ps
+curl localhost:8080 | head -n 20
+history -a
