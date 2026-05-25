@@ -25,7 +25,7 @@ flush ruleset
 table ip nat {
     chain prerouting {
         type nat hook prerouting priority dstnat;
-        iifname enp7s1 tcp dport [ПОРТ_ПРОБРОСА] dnat to 192.168.3.10:[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ]
+        iifname enp7s1 tcp dport [ПОРТ_ПРОБРОСА_DOCKER] dnat to 192.168.3.10:[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ]
         iifname enp7s1 tcp dport [SSH_ПОРТ] dnat to 192.168.3.10:22
     }
     chain postrouting {
