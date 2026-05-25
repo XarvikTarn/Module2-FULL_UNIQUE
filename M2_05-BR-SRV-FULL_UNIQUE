@@ -79,7 +79,7 @@ services:
     container_name: [ИМЯ_КОНТЕЙНЕРА_БД]
     image: mariadb:latest
     environment:
-      MYSQL_DATABASE: [ИМЯ_БД]
+      MYSQL_DATABASE: [ИМЯ_DOCKER-БД]
       MYSQL_USER: [ИМЯ_ПОЛЬЗОВАТЕЛЯ_БД]
       MYSQL_PASSWORD: [ПАРОЛЬ_ПОЛЬЗОВАТЕЛЯ_БД]
       MYSQL_ROOT_PASSWORD: toor
