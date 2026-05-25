@@ -96,7 +96,7 @@ services:
       DB_TYPE: "maria"
       DB_HOST: "[ИМЯ_КОНТЕЙНЕРА_БД]"
       DB_PORT: "3306"
-      DB_NAME: "[ИМЯ_БД]"
+      DB_NAME: "[ИМЯ_DOCKER-БД]"
       DB_USER: "[ИМЯ_ПОЛЬЗОВАТЕЛЯ_БД]"
       DB_PASS: "[ПАРОЛЬ_ПОЛЬЗОВАТЕЛЯ_БД]"
     depends_on:
@@ -110,5 +110,5 @@ systemctl disable --now ahttpd httpd2 nginx 2>/dev/null || true
 docker compose up -d
 sleep 5
 docker compose ps
-curl localhost:8080 | head -n 20
+curl localhost:[ПОРТ_DOCKER-ПРИЛОЖЕНИЯ] | head -n 20
 history -a
