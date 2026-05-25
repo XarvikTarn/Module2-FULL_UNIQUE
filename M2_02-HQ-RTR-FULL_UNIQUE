@@ -1,0 +1,40 @@
+#Preparing HQ-RTR for configuration
+sed -i 's|http://ftp.altlinux.org/pub/distributions/ALTLinux|http://10.45.33.250:3142/altlinux|g' /etc/apt/sources.list.d/alt.list
+echo "nameserver 77.88.8.8" > /etc/resolv.conf
+apt-get update && apt-get install -y chrony
+sed -i 's/192.168.1.10/192.168.3.10/' /etc/dnsmasq.conf
+sed -i 's/192.168.1.10/192.168.3.10/' /etc/net/ifaces/*/resolv.conf 2>/dev/null || true
+cat <<EOF > /etc/openssh/sshd_config
+Port 22
+PermitRootLogin yes
+Subsystem sftp /usr/lib/openssh/sftp-server
+EOF
+systemctl enable sshd
+systemctl restart dnsmasq network sshd
+
+#Setting up NTP-Client
+sed -i '/pool/d' /etc/chrony.conf
+sed -i '/server/d' /etc/chrony.conf
+echo "server 172.16.1.1 iburst prefer" >> /etc/chrony.conf
+systemctl restart chronyd
+sleep 3 && chronyc sources
+
+#Setting up Nginx-Server
+cat <<EOF > /etc/nftables/nftables.nft
+#!/usr/sbin/nft -f
+flush ruleset
+table ip nat {
+    chain prerouting {
+        type nat hook prerouting priority dstnat;
+        iifname enp7s1 tcp dport 8080 dnat to 192.168.1.10:80
+        iifname enp7s1 tcp dport 2026 dnat to 192.168.1.10:22
+    }
+    chain postrouting {
+        type nat hook postrouting priority srcnat;
+        oifname enp7s1 masquerade
+    }
+}
+EOF
+systemctl restart nftables
+nft list ruleset
+history -a
