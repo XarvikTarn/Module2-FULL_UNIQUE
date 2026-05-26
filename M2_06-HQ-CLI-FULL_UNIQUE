@@ -27,8 +27,8 @@ sleep 3
 control libnss-role enabled
 roleadd [ИМЯ_ГРУППЫ] wheel
 cat <<EOF > /etc/sudoers.d/[ИМЯ_ГРУППЫ]_restrictions
-Cmnd_Alias [ИМЯ_ГРУППЫ]_CMDS = /bin/cat, /bin/grep, /usr/bin/id
-%wheel ALL=(ALL) NOPASSWD: [ИМЯ_ГРУППЫ]_CMDS
+Cmnd_Alias [ИМЯ_ГРУППЫ_CAPS]_CMDS = /bin/cat, /bin/grep, /usr/bin/id
+%wheel ALL=(ALL) NOPASSWD: [ИМЯ_ГРУППЫ_CAPS]_CMDS
 EOF
 
 
