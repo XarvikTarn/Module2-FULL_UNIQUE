@@ -3,8 +3,8 @@
 -На HQ-RTR и BR-RTR введи ip route
 -На HQ-RTR и BR-RTR введи vtysh -c "show ip ospf neighbor"
 
-Если одна из ВМ не даёт ответ на ping -c 2 8.8.8.8 - перезагрузи конкретно эту ВМ командой "systemctl reboot".
-Если HQ-RTR и BR-RTR не дают ответ "FULL" на vtysh -c "show ip ospf neighbor" - перезагрузи их ОБА командой "systemctl reboot".
+Если одна из ВМ не даёт ответ на ping -c 2 8.8.8.8 - перезагрузи конкретно эту ВМ командой "systemctl reboot" и попробуй снова.
+Если HQ-RTR и BR-RTR не дают ответ "FULL" на vtysh -c "show ip ospf neighbor" - подожди 5 секунд и попробуй снова. Если всё ещё нет - перезагрузи их ОБА командой "systemctl reboot" и попробуй снова.
 
 #Логин - root, Пароль - toor
 #В графическом интерфейсе (HQ-CLI, этап 21) Логин - user, Пароль - resu
